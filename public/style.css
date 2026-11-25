@@ -32,8 +32,8 @@ h2{margin:0}
 .history li{display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:8px 14px;border-radius:10px;font-size:1.25rem}
 .history .n{font-family:ui-monospace,Menlo,monospace;letter-spacing:.2em;font-weight:700}
 .history .i{color:var(--mut);font-size:.85rem;width:2em}
-.history .r{font-size:1rem;font-weight:700}
-.f{color:var(--acc)}.p{color:var(--pica)}
+.history .r{font-size:.95rem;font-weight:700;text-align:right}
+.x{color:var(--mut)}.f{color:var(--acc)}.p{color:var(--pica)}
 .empty{color:var(--mut);justify-content:center!important;font-size:1rem!important}
 .pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding-top:8px}
 .pad button{font:inherit;font-size:1.5rem;font-weight:600;padding:14px 0;border-radius:12px;border:none;background:var(--card);color:var(--fg)}

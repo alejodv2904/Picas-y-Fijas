@@ -57,9 +57,16 @@
     $('#pad').querySelectorAll('[data-d]').forEach((b) => b.disabled = input.includes(b.dataset.d));
   }
 
+  // Texto natural: "2 picas y 1 fija", "3 fijas", "1 pica", "Nada"
+  function resultado(g) {
+    const parts = [];
+    if (g.picas) parts.push(`<span class="p">${g.picas} ${g.picas === 1 ? 'pica' : 'picas'}</span>`);
+    if (g.fijas) parts.push(`<span class="f">${g.fijas} ${g.fijas === 1 ? 'fija' : 'fijas'}</span>`);
+    return parts.length ? parts.join(' y ') : '<span class="x">Nada</span>';
+  }
   function guessRow(g, i) {
     const li = document.createElement('li');
-    li.innerHTML = `<span class="i">${i + 1}.</span><span class="n">${g.guess}</span><span class="r"><span class="f">${g.fijas} F</span> · <span class="p">${g.picas} P</span></span>`;
+    li.innerHTML = `<span class="i">${i + 1}.</span><span class="n">${g.guess}</span><span class="r">${resultado(g)}</span>`;
     return li;
   }
   function fill(ol, arr) {

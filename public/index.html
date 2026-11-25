@@ -55,6 +55,7 @@
 
   <!-- Juego -->
   <section id="s-play" class="screen hidden">
+    <div class="mine">Tu número: <b id="my-secret" class="mono"></b></div>
     <div id="turn" class="turn"></div>
     <div class="tabs">
       <button class="tab active" data-tab="mine">Mis intentos</button>
@@ -63,6 +64,13 @@
     <ol id="list-mine" class="history"></ol>
     <ol id="list-opp" class="history hidden"></ol>
     <div class="slots" data-slots></div>
+    <div id="answer" class="answer hidden">
+      <div class="ask">Tu rival dice <b id="ans-guess" class="mono"></b></div>
+      <div class="stepper"><span class="p">Picas</span><button data-k="picas" data-v="-1">−</button><b id="ans-picas">0</b><button data-k="picas" data-v="1">+</button></div>
+      <div class="stepper"><span class="f">Fijas</span><button data-k="fijas" data-v="-1">−</button><b id="ans-fijas">0</b><button data-k="fijas" data-v="1">+</button></div>
+      <div class="say">Le dirás: <b id="ans-text"></b></div>
+      <button id="btn-answer" class="btn primary">Enviar respuesta</button>
+    </div>
   </section>
 
   <!-- Fin -->

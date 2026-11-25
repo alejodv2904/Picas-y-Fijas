@@ -1,7 +1,7 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const screens = ['home', 'wait', 'secret', 'play', 'over'];
-  let st = null, input = '';
+  let st = null, input = '', ans = { picas: 0, fijas: 0 };
 
   const net = window.Net;
   function send(m) { net.send(m); }
@@ -54,10 +54,15 @@
     li.innerHTML = `<span class="i">${i + 1}.</span><span class="n">${g.guess}</span><span class="r">${resultado(g)}</span>`;
     return li;
   }
-  function fill(ol, arr) {
+  function fill(ol, arr, pend) {
     ol.innerHTML = '';
-    if (!arr.length) { ol.innerHTML = '<li class="empty">Sin intentos aún</li>'; return; }
+    if (!arr.length && !pend) { ol.innerHTML = '<li class="empty">Sin intentos aún</li>'; return; }
     arr.forEach((g, i) => ol.appendChild(guessRow(g, i)));
+    if (pend) {
+      const li = document.createElement('li'); li.className = 'pend';
+      li.innerHTML = `<span class="i">${arr.length + 1}.</span><span class="n">${pend}</span><span class="r">esperando…</span>`;
+      ol.appendChild(li);
+    }
     ol.scrollTop = ol.scrollHeight;
   }
 
@@ -69,7 +74,7 @@
     else if (st.phase === 'secrets') {
       if (st.youReady) {
         $('#s-secret h2').textContent = 'Número guardado ✔';
-        $('#secret-status').textContent = st.oppReady ? '' : 'Esperando que tu rival elija el suyo…';
+        $('#secret-status').textContent = (st.oppReady ? '' : 'Esperando que tu rival elija el suyo…') + ' Tu número: ' + st.mySecret;
         $('#s-secret .slots').style.display = 'none'; show('secret'); $('#pad').classList.add('hidden');
       } else {
         $('#s-secret h2').textContent = 'Elige tu número secreto';
@@ -78,11 +83,22 @@
       }
     } else if (st.phase === 'playing') {
       const turn = $('#turn');
-      turn.className = 'turn' + (st.yourTurn ? ' mine' : '');
-      turn.textContent = !st.oppConnected ? 'Rival desconectado… esperando' : st.yourTurn ? '¡Tu turno!' : 'Turno del rival…';
-      fill($('#list-mine'), st.myGuesses); fill($('#list-opp'), st.oppGuesses);
-      if (prev && prev.yourTurn !== st.yourTurn && st.yourTurn) navigator.vibrate && navigator.vibrate(60);
+      turn.className = 'turn' + (st.yourTurn || st.toAnswer ? ' mine' : '');
+      turn.textContent = !st.oppConnected ? 'Rival desconectado… esperando'
+        : st.toAnswer ? 'Dile cuántas picas y fijas tiene'
+        : st.waitingAnswer ? 'Tu rival está revisando…'
+        : st.yourTurn ? '¡Tu turno! Adivina' : 'Turno del rival…';
+      $('#my-secret').textContent = st.mySecret;
+      fill($('#list-mine'), st.myGuesses, st.waitingAnswer ? st.pending.guess : null);
+      fill($('#list-opp'), st.oppGuesses, st.toAnswer ? st.pending.guess : null);
+      const newAsk = st.toAnswer && !(prev && prev.toAnswer && prev.pending.guess === st.pending.guess);
+      if (newAsk) { ans = { picas: 0, fijas: 0 }; navigator.vibrate && navigator.vibrate(60); }
+      if (st.toAnswer) { $('#ans-guess').textContent = st.pending.guess; drawAnswer(); }
+      $('#answer').classList.toggle('hidden', !st.toAnswer);
+      document.querySelectorAll('#s-play [data-slots]').forEach((el) => el.style.display = st.toAnswer ? 'none' : '');
+      if (prev && !prev.yourTurn && st.yourTurn) navigator.vibrate && navigator.vibrate(60);
       show('play');
+      $('#pad').classList.toggle('hidden', st.toAnswer);
     } else if (st.phase === 'over') {
       const won = st.winner === st.you;
       $('#over-title').textContent = won ? '🎉 ¡Ganaste!' : '😬 Perdiste';
@@ -92,6 +108,23 @@
       show('over');
     }
   }
+
+  function drawAnswer() {
+    $('#ans-picas').textContent = ans.picas; $('#ans-fijas').textContent = ans.fijas;
+    $('#ans-text').innerHTML = resultado(ans);
+    const total = ans.picas + ans.fijas;
+    document.querySelectorAll('#answer [data-k]').forEach((b) => {
+      const v = +b.dataset.v, cur = ans[b.dataset.k];
+      b.disabled = v < 0 ? cur <= 0 : total >= 4;
+    });
+  }
+  $('#answer').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-k]'); if (!b) return;
+    ans[b.dataset.k] += +b.dataset.v; drawAnswer();
+  });
+  $('#btn-answer').onclick = () => {
+    if (st.toAnswer) send({ t: 'answer', picas: ans.picas, fijas: ans.fijas });
+  };
 
   // ---------- Eventos ----------
   $('#btn-create').onclick = () => net.create(onMsg, onStatus);

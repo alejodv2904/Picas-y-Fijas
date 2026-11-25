@@ -5,7 +5,7 @@
   class Room {
     constructor(code) {
       this.code = code; this.players = []; this.phase = 'waiting';
-      this.turn = 0; this.winner = null; this.rematch = [false, false];
+      this.turn = 0; this.pending = null; this.winner = null; this.rematch = [false, false];
     }
     addPlayer() {
       if (this.players.length >= 2) return -1;
@@ -21,7 +21,10 @@
         t: 'state', code: this.code, phase: this.phase, you: i,
         oppConnected: !!(opp && opp.connected),
         youReady: !!me.secret, oppReady: !!(opp && opp.secret),
-        yourTurn: this.phase === 'playing' && this.turn === i,
+        yourTurn: this.phase === 'playing' && this.turn === i && !this.pending,
+        toAnswer: !!(this.pending && this.pending.by !== i),
+        waitingAnswer: !!(this.pending && this.pending.by === i),
+        pending: this.pending,
         myGuesses: me.guesses, oppGuesses: opp ? opp.guesses : [],
         winner: this.winner, mySecret: me.secret,
         oppSecret: this.phase === 'over' && opp ? opp.secret : null,
@@ -40,18 +43,27 @@
           this.phase = 'playing'; this.turn = Math.random() < 0.5 ? 0 : 1;
         }
       } else if (m.t === 'guess') {
-        if (this.phase !== 'playing' || this.turn !== i) return;
+        // El que adivina propone un número; el rival le dice cuántas picas y fijas tiene.
+        if (this.phase !== 'playing' || this.turn !== i || this.pending) return;
         if (!G.isValid(m.guess)) return 'Usa 4 dígitos distintos';
         if (me.guesses.some((g) => g.guess === m.guess)) return 'Ya probaste ese número';
-        const r = G.score(opp.secret, m.guess);
-        me.guesses.push({ guess: m.guess, ...r });
-        if (r.fijas === G.LEN) { this.phase = 'over'; this.winner = i; } else this.turn = 1 - i;
+        this.pending = { by: i, guess: m.guess };
+      } else if (m.t === 'answer') {
+        if (this.phase !== 'playing' || !this.pending || this.pending.by === i) return;
+        const { picas, fijas } = m;
+        const ok = Number.isInteger(picas) && Number.isInteger(fijas) && picas >= 0 && fijas >= 0
+          && picas + fijas <= G.LEN && !(fijas === G.LEN - 1 && picas === 1);
+        if (!ok) return 'Respuesta imposible: revisa las picas y fijas';
+        const by = this.pending.by;
+        this.players[by].guesses.push({ guess: this.pending.guess, picas, fijas });
+        this.pending = null;
+        if (fijas === G.LEN) { this.phase = 'over'; this.winner = by; } else this.turn = i;
       } else if (m.t === 'rematch') {
         if (this.phase !== 'over') return;
         this.rematch[i] = true;
         if (this.rematch[0] && this.rematch[1]) {
           this.players.forEach((p) => { p.secret = null; p.guesses = []; });
-          this.rematch = [false, false]; this.winner = null; this.phase = 'secrets';
+          this.rematch = [false, false]; this.winner = null; this.pending = null; this.phase = 'secrets';
         }
       }
     }

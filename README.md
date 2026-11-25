@@ -4,7 +4,7 @@ Página web estática (PWA) para jugar **Picas y Fijas con 4 dígitos distintos*
 
 - **Fija**: dígito correcto en la posición correcta. **Pica**: dígito correcto en otra posición. Gana quien saque 4 fijas.
 - Un jugador crea la partida y comparte el código (o el enlace `?sala=CODIGO`); el otro se une.
-- Los resultados se muestran como "2 picas y 1 fija", "3 fijas", "1 pica" o "Nada".
+- Tú eliges el resultado: cuando el rival adivina tu número, le dices cuántas picas y fijas tiene (se muestra como "2 picas y 1 fija", "3 fijas", "1 pica" o "Nada"). Tu número secreto siempre se ve arriba.
 - Hay revancha. Si el invitado pierde la señal, se reconecta solo. Si el anfitrión cierra o recarga la página, la partida se acaba.
 
 ## Publicar

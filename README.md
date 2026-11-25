@@ -1,25 +1,22 @@
 # Picas y Fijas (2 jugadores, tiempo real)
 
-Juego de adivinar el número de **4 dígitos distintos** del rival. App web instalable (PWA) que funciona en **Android e iOS** y se conecta en tiempo real por WebSocket.
+Página web estática (PWA) para jugar **Picas y Fijas con 4 dígitos distintos** entre dos celulares, Android o iOS. **No necesita servidor propio**: los dos celulares se conectan directamente (WebRTC con PeerJS) y el del jugador que crea la partida hace de árbitro.
 
-- **Fija**: dígito correcto en la posición correcta. **Pica**: dígito correcto en otra posición. Gana quien logre 4 fijas.
-- Un jugador crea la sala y comparte el código (o enlace `?sala=CODIGO`); el otro se une. Cada uno elige su secreto y juegan por turnos. Hay revancha y reconexión automática.
-- El servidor es autoritativo: los números secretos nunca se envían al rival hasta que termina la partida.
+- **Fija**: dígito correcto en la posición correcta. **Pica**: dígito correcto en otra posición. Gana quien saque 4 fijas.
+- Un jugador crea la partida y comparte el código (o el enlace `?sala=CODIGO`); el otro se une.
+- Los resultados se muestran como "2 picas y 1 fija", "3 fijas", "1 pica" o "Nada".
+- Hay revancha. Si el invitado pierde la señal, se reconecta solo. Si el anfitrión cierra o recarga la página, la partida se acaba.
 
-## Ejecutar
-```bash
-npm install
-npm start        # http://localhost:3000
-npm test
-```
-
-## Publicar (necesita un host con WebSockets: Render, Railway, Fly.io, un VPS…)
-Es un solo proceso Node (`npm start`, usa `PORT`). Vercel serverless **no** sirve para WebSockets.
-Con HTTPS en la URL pública, el cliente usa `wss://` automáticamente.
+## Publicar
+Es solo la carpeta `public/`; sirve en cualquier hosting estático con HTTPS (Vercel, Netlify, GitHub Pages…). En Vercel: *Root Directory* = `public`, sin comando de build.
 
 ## Instalar en el celular
 - **Android (Chrome)**: menú ⋮ → *Instalar aplicación*.
 - **iOS (Safari)**: Compartir → *Añadir a pantalla de inicio*.
 
-## APK / App Store (opcional)
-La web ya es una PWA. Para empaquetarla: Android → [Bubblewrap/TWA](https://github.com/GoogleChromeLabs/bubblewrap) o Capacitor; iOS → Capacitor (requiere Mac y cuenta de Apple Developer).
+## Desarrollo
+```bash
+npm start   # sirve public/ en http://localhost:3000
+npm test    # reglas del juego
+```
+Nota: el "apretón de manos" inicial pasa por el servidor público gratuito de PeerJS (0.peerjs.com); las jugadas viajan directo entre los celulares. Algunas redes muy restrictivas (p. ej. wifi corporativo) pueden bloquear la conexión directa.

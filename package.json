@@ -1,13 +1,10 @@
 {
   "name": "picas-y-fijas",
-  "version": "1.0.0",
-  "description": "Picas y Fijas en tiempo real para 2 jugadores (PWA: Android + iOS)",
-  "main": "server.js",
+  "version": "2.0.0",
+  "description": "Picas y Fijas para 2 jugadores en tiempo real (página estática, Android + iOS)",
   "scripts": {
-    "start": "node server.js",
+    "start": "npx --yes serve public -l 3000",
     "test": "node test.js"
   },
-  "engines": { "node": ">=18" },
-  "dependencies": { "ws": "^8.18.0" },
   "license": "MIT"
 }

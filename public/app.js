@@ -1,29 +1,14 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const screens = ['home', 'wait', 'secret', 'play', 'over'];
-  let ws, st = null, input = '', session = load(), retry = 0, wantOpen = true;
+  let st = null, input = '';
 
-  function load() { try { return JSON.parse(localStorage.getItem('pyf') || 'null'); } catch { return null; } }
-  function save(s) { session = s; try { s ? localStorage.setItem('pyf', JSON.stringify(s)) : localStorage.removeItem('pyf'); } catch {} }
-
-  // ---------- Red ----------
-  function connect(onOpen) {
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    ws = new WebSocket(`${proto}://${location.host}`);
-    ws.onopen = () => { retry = 0; $('#conn').classList.add('hidden'); onOpen && onOpen(); };
-    ws.onmessage = (e) => onMsg(JSON.parse(e.data));
-    ws.onclose = () => {
-      if (!wantOpen) return;
-      if (session) $('#conn').classList.remove('hidden');
-      setTimeout(() => connect(() => session && send({ t: 'resume', ...session })), Math.min(1000 * 2 ** retry++, 8000));
-    };
-  }
-  function send(m) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(m)); }
-
+  const net = window.Net;
+  function send(m) { net.send(m); }
+  function onStatus(x) { $('#conn').classList.toggle('hidden', x === 'ok'); }
   function onMsg(m) {
-    if (m.t === 'joined') { save({ code: m.code, token: m.token }); }
-    else if (m.t === 'resume_failed') { save(null); st = null; show('home'); }
-    else if (m.t === 'error') { toast(m.message); }
+    if (m.t === 'error') toast(m.message);
+    else if (m.t === 'gone') { st = null; input = ''; show('home'); onStatus('ok'); toast(m.message); }
     else if (m.t === 'state') { const prev = st; st = m; render(prev); }
   }
 
@@ -109,18 +94,18 @@
   }
 
   // ---------- Eventos ----------
-  $('#btn-create').onclick = () => send({ t: 'create' });
+  $('#btn-create').onclick = () => net.create(onMsg, onStatus);
   $('#btn-join').onclick = joinFromInput;
   $('#inp-code').addEventListener('keydown', (e) => e.key === 'Enter' && joinFromInput());
-  function joinFromInput() { const c = $('#inp-code').value.trim(); if (c.length === 4) send({ t: 'join', code: c }); else toast('Código de 4 caracteres'); }
+  function joinFromInput() { const c = $('#inp-code').value.trim(); if (c.length === 4) net.join(c, onMsg, onStatus); else toast('Código de 4 caracteres'); }
 
   $('#btn-share').onclick = async () => {
-    const url = `${location.origin}/?sala=${st.code}`;
+    const url = `${location.origin}${location.pathname}?sala=${st.code}`;
     const text = `¡Juega Picas y Fijas conmigo! Código: ${st.code}`;
     try { if (navigator.share) return await navigator.share({ title: 'Picas y Fijas', text, url }); } catch { return; }
     try { await navigator.clipboard.writeText(`${text} ${url}`); toast('Enlace copiado'); } catch { prompt('Copia el enlace:', url); }
   };
-  document.querySelectorAll('[data-leave]').forEach((b) => b.onclick = () => { send({ t: 'leave' }); save(null); st = null; input = ''; show('home'); });
+  document.querySelectorAll('[data-leave]').forEach((b) => b.onclick = () => { net.leave(); st = null; input = ''; show('home'); });
   $('#btn-rematch').onclick = () => send({ t: 'rematch' });
   document.querySelectorAll('.tab').forEach((b) => b.onclick = () => {
     document.querySelectorAll('.tab').forEach((x) => x.classList.toggle('active', x === b));
@@ -154,14 +139,8 @@
 
   // ---------- Arranque ----------
   const sala = new URLSearchParams(location.search).get('sala');
-  if (sala) { $('#inp-code').value = sala.toUpperCase(); history.replaceState(null, '', '/'); }
-  connect(() => {
-    if (session) send({ t: 'resume', ...session });
-    else if (sala && sala.length === 4) send({ t: 'join', code: sala });
-  });
+  if (sala) { $('#inp-code').value = sala.toUpperCase(); history.replaceState(null, '', location.pathname); }
+  if (sala && sala.length === 4) net.join(sala, onMsg, onStatus);
   show('home');
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && (!ws || ws.readyState > 1)) connect(() => session && send({ t: 'resume', ...session }));
-  });
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 })();

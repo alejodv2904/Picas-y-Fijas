@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Picas y Fijas">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Picas y Fijas</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main id="app">
+  <div id="conn" class="conn hidden">Reconectando…</div>
+
+  <!-- Inicio -->
+  <section id="s-home" class="screen">
+    <h1>Picas <span>y</span> Fijas</h1>
+    <p class="sub">Adivina el número de 4 dígitos de tu rival</p>
+    <button id="btn-create" class="btn primary">Crear partida</button>
+    <div class="or">o únete con un código</div>
+    <div class="row">
+      <input id="inp-code" maxlength="4" autocapitalize="characters" autocomplete="off" placeholder="CÓDIGO">
+      <button id="btn-join" class="btn">Unirme</button>
+    </div>
+    <details class="rules">
+      <summary>¿Cómo se juega?</summary>
+      <p>Cada jugador elige un número secreto de <b>4 dígitos distintos</b>. Por turnos intentan adivinar el del otro.</p>
+      <p><b>Fija</b> 🎯: dígito correcto en la posición correcta.<br><b>Pica</b> 🔸: dígito correcto en otra posición.</p>
+      <p>Gana quien consiga <b>4 fijas</b> primero.</p>
+    </details>
+  </section>
+
+  <!-- Esperando rival -->
+  <section id="s-wait" class="screen hidden">
+    <h2>Esperando rival…</h2>
+    <p class="sub">Comparte este código:</p>
+    <div id="room-code" class="code">----</div>
+    <button id="btn-share" class="btn primary">Compartir invitación</button>
+    <button class="btn ghost" data-leave>Cancelar</button>
+  </section>
+
+  <!-- Elegir secreto -->
+  <section id="s-secret" class="screen hidden">
+    <h2>Elige tu número secreto</h2>
+    <p class="sub">4 dígitos distintos</p>
+    <div class="slots" data-slots></div>
+    <p id="secret-status" class="sub"></p>
+  </section>
+
+  <!-- Juego -->
+  <section id="s-play" class="screen hidden">
+    <div id="turn" class="turn"></div>
+    <div class="tabs">
+      <button class="tab active" data-tab="mine">Mis intentos</button>
+      <button class="tab" data-tab="opp">Rival</button>
+    </div>
+    <ol id="list-mine" class="history"></ol>
+    <ol id="list-opp" class="history hidden"></ol>
+    <div class="slots" data-slots></div>
+  </section>
+
+  <!-- Fin -->
+  <section id="s-over" class="screen hidden">
+    <h2 id="over-title"></h2>
+    <p class="sub">Tu número: <b id="over-mine" class="mono"></b> · Número del rival: <b id="over-opp" class="mono"></b></p>
+    <button id="btn-rematch" class="btn primary">Revancha</button>
+    <p id="rematch-status" class="sub"></p>
+    <button class="btn ghost" data-leave>Salir</button>
+  </section>
+
+  <!-- Teclado numérico compartido -->
+  <div id="pad" class="pad hidden">
+    <button data-d="1">1</button><button data-d="2">2</button><button data-d="3">3</button>
+    <button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button>
+    <button data-d="7">7</button><button data-d="8">8</button><button data-d="9">9</button>
+    <button data-act="back" aria-label="Borrar">⌫</button><button data-d="0">0</button><button data-act="ok" class="ok" aria-label="Enviar">✔</button>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
